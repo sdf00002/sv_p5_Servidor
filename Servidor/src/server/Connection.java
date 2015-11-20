@@ -10,8 +10,22 @@ import java.net.SocketException;
 
 public class Connection implements Runnable {
 
+	
+	//PDU formada por: Version+secuencia+tipo+comando+payload
+	
+		//Comandos utilizados en el protocolo
+		public static final String CRLF="\r\n";
+		public static final String OK="+OK";
+		public static final String ERR="-ERR";
+		public static final String QUIT="QUIT";
+		//Tipos de mensajes
+		public static final byte MSG_LOGIN=0x01; 
+		public static final byte MSG_OPERACION=0x02;
+		public static final byte MSG_FIN=0X04;
+	
 	Socket mSocket;
-	public static String MSG_WELCOME = "OK Bienvenido al servidor de pruebas\r\n";
+	public static String MSG_WELCOME = OK+" Bienvenido al servidor de pruebas"+CRLF;
+
 
 	public Connection(Socket s) {
 		mSocket = s;
@@ -21,7 +35,10 @@ public class Connection implements Runnable {
 	public void run() {
 		String inputData = null;
 		String outputData = "";
-		int estado = 0;
+		String comando,payload,user="",pass="";
+		byte version=0, tipo=0,VERSION=1;
+		int estado = 0,secuencia;
+		Authentication auth = new Authentication("");
 		if (mSocket != null) {
 			try {
 
@@ -34,16 +51,34 @@ public class Connection implements Runnable {
 					System.out.println("Servidor [Recibido]> " + inputData);
 					String campos[] = inputData.split(" ");
 
-					if (campos.length == 2) {
-						String comando = campos[0];
-						String parametro = campos[1];
+					if (campos.length == 5) {
+						try{
+						version = Byte.parseByte(campos[0]);
+						} catch(NumberFormatException e){
+							//Acciones asociadas a una version invalida
+						}
+						secuencia = Integer.parseInt(campos[1]);
+						tipo = Byte.parseByte(campos[2]);
+						comando = campos[3];
+						payload = campos [4];
 
 						switch (estado) {
 
 						case 0:
-							if (comando.equalsIgnoreCase("USER")) {
-								outputData = "OK ";
+							if (version==1 && tipo== MSG_LOGIN && comando.equalsIgnoreCase(OK)) {
+								//Comprobamos el usuario y su contraseña
+								user = payload.substring(0,6);
+								pass = payload.substring(6, payload.length());
+								auth = new Authentication(user);
+								//Comprobamos que exista el usuario y que la contraseña sea correcta
+								if (auth.open(user) == true && auth.checkKey(pass) == true) {	
+									outputData = CRLF+VERSION+secuencia+1+MSG_LOGIN+OK+CRLF;
+									output.write(outputData.getBytes());
+									estado++;
+								}
+								
 								// Si el formato es correcto
+								outputData =VERSION+secuencia+1+MSG_LOGIN+OK+CRLF;				
 								estado++;
 							}
 							break;
@@ -57,15 +92,15 @@ public class Connection implements Runnable {
 
 									try {
 										String power = String
-												.valueOf(Integer.parseInt(parametro) * Integer.parseInt(parametro));
-										outputData = "OK " + parametro + " EL CUADRADO = " + power + "\r\n";
+												.valueOf(Integer.parseInt(comando) * Integer.parseInt(comando));
+										outputData = "OK " + comando + " EL CUADRADO = " + power + "\r\n";
 
 									} catch (NumberFormatException ex) {
 										outputData = "ERROR FORMATO DE NUMERO INCORRECTO\r\n";
 									}
 								} else
 
-									outputData = "OK [" + comando + "] " + " PARAMETRO= " + parametro + "\r\n";
+									outputData = "OK [" + comando + "] " + " PARAMETRO= " +   "\r\n";
 
 							} else
 								outputData = "ERROR COMANDO DESCONOCIDO\r\n";
