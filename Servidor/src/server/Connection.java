@@ -50,12 +50,22 @@ public class Connection implements Runnable {
 				while ((inputData = input.readLine()) != null) {
 					System.out.println("Servidor [Recibido]> " + inputData);
 					String campos[] = inputData.split(" ");
-
-					if (campos.length == 5) {
+					
+					if (campos.length==1){
+						if(inputData.equalsIgnoreCase("")||inputData.equalsIgnoreCase(QUIT)){
+							outputData="Has salido";
+							break;
+						}
+						else outputData = "ERROR [" + inputData + "] NO ES UN COMANDO VALIDO"+CRLF;
+					}
+					
+					else if (campos.length == 5) {
 						try{
 						version = Byte.parseByte(campos[0]);
 						} catch(NumberFormatException e){
 							//Acciones asociadas a una version invalida
+							outputData = ERR+" [" + version + "] FORMATO DE VERSION NO VALIDO"+CRLF;
+							break;
 						}
 						secuencia = Integer.parseInt(campos[1]);
 						tipo = Byte.parseByte(campos[2]);
@@ -67,51 +77,93 @@ public class Connection implements Runnable {
 						case 0:
 							if (version==1 && tipo== MSG_LOGIN && comando.equalsIgnoreCase(OK)) {
 								//Comprobamos el usuario y su contraseña
-								user = payload.substring(0,6);
-								pass = payload.substring(6, payload.length());
+								String[] credencial = payload.split("_");
+								user=credencial[0];
+								pass = credencial[1];
 								auth = new Authentication(user);
 								//Comprobamos que exista el usuario y que la contraseña sea correcta
-								if (auth.open(user) == true && auth.checkKey(pass) == true) {	
-									outputData = CRLF+VERSION+secuencia+1+MSG_LOGIN+OK+CRLF;
-									output.write(outputData.getBytes());
+								if (auth.open(user)==true && auth.checkKey(pass) == true) {	
+									outputData = CRLF+VERSION + secuencia + 1 + MSG_LOGIN + OK + "Realiza la operacion"+CRLF;
+									
 									estado++;
 								}
 								
-								// Si el formato es correcto
-								outputData =VERSION+secuencia+1+MSG_LOGIN+OK+CRLF;				
-								estado++;
+								else if (auth.open(user)==false){
+									outputData = ERR+"[" + user + "] NO ES UN USUARIO REGISTRADO"+CRLF;
+									
+								}
+								
+								else if (auth.open(user)==true && auth.checkKey(pass) == false){
+									outputData = ERR+"[" + user + "] CONTRASENA INCORRECTA+CRLF";
+								}
+								
+								else if (tipo!=MSG_LOGIN){
+									outputData = ERR+" [" + inputData + "] TIPO DE MENSAJE INCORRECTO"+CRLF;
+									
+								}
+								
+							//Hacer comprobacion version tipo y comando
 							}
+							
+							else if (tipo!=MSG_LOGIN){
+								outputData = ERR+" [" + inputData + "] TIPO DE MENSAJE INCORRECTO"+CRLF;
+								
+							}
+							
+							else if(comando!=OK){
+								outputData = ERR+" [" + comando + "] COMANDO INCORRECTO"+CRLF;
+
+							}
+							
 							break;
+						
+
 						case 1:
-							break;
 
-						case 2:
-
-							if (comando.length() == 4) {
-								if (comando.equalsIgnoreCase("POWR")) {
+							if (comando.length() == 3 && version==1 && tipo==MSG_OPERACION) {
+								if (comando.equalsIgnoreCase("SIN")) {
 
 									try {
-										String power = String
-												.valueOf(Integer.parseInt(comando) * Integer.parseInt(comando));
-										outputData = "OK " + comando + " EL CUADRADO = " + power + "\r\n";
+										String sin = String
+												.valueOf(Math.sin(Double.parseDouble(payload)));
+										outputData = "OK " + comando + " el seno  es = " + sin +CRLF;
 
 									} catch (NumberFormatException ex) {
-										outputData = "ERROR FORMATO DE NUMERO INCORRECTO\r\n";
+										outputData = ERR+" FORMATO DE NUMERO INCORRECTO\r\n";
 									}
-								} else
+								} else if(comando.equalsIgnoreCase("COS")){
+									try {
+										String cos = String
+												.valueOf(Math.cos(Double.parseDouble(payload)));
+										outputData = CRLF+"OK " + comando + " el coseno  es = " + cos + CRLF;
 
-									outputData = "OK [" + comando + "] " + " PARAMETRO= " +   "\r\n";
-
-							} else
-								outputData = "ERROR COMANDO DESCONOCIDO\r\n";
+									} catch (NumberFormatException ex) {
+										outputData = ERR+" FORMATO DE NUMERO INCORRECTO"+CRLF;
+									}
+								}
+								
+								else
+									outputData = ERR+" COMANDO DESCONOCIDO"+CRLF;
+									
+							}
+							else if(version!=1)
+								outputData = ERR+" VERSION INCORRECTA"+CRLF;
+							
+							else if (tipo!=MSG_OPERACION)
+								outputData = ERR+" TIPO DE MENSAJE INCORRECTO"+CRLF;
+							
+							else
+								outputData = ERR+" COMANDO DESCONOCIDO"+CRLF;
 							break;
 						}
+						
 					} else
-						outputData = "ERROR [" + inputData + "] NO ES UN COMANDO VALIDO\r\n";
+						outputData = ERR+" [" + inputData + "] NO ES UN COMANDO VALIDO"+CRLF;
 
 					output.write(outputData.getBytes());
 
 				}
+				output.write(outputData.getBytes());
 				System.out.println(
 						"Servidor [Finalizado]> " + mSocket.getInetAddress().toString() + ":" + mSocket.getPort());
 
