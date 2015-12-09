@@ -19,7 +19,7 @@ public class Servidor {
 				System.out.println("Servidor> Conexión entrante desde "
 						+ newsocket.getInetAddress().toString() + ":"
 						+ newsocket.getPort());
-				new Thread(new Connection(newsocket)).start();
+				new Thread(new Connection2(newsocket)).start();
 			}
 		} catch (IOException e) {
 			System.err.println("Server "+e.getMessage());
