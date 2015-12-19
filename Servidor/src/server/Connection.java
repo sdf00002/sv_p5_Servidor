@@ -30,7 +30,7 @@ public class Connection implements Runnable {
 
 	@Override
 	public void run() {
-		String inputData = null;
+		
 		String outputData = "";
 		String comando,payload,user="",pass="",valor="";
 		byte version=0, tipo=0,VERSION=1;
@@ -81,9 +81,32 @@ public class Connection implements Runnable {
 
 							//Comprobamos el usuario y su contraseña
 							String[] credencial = payload.split("_");
+							
+							if(credencial.length!=3){
+								String aux="Valor no valido";
+								
+								outputData =String.valueOf(VERSION) + secuencia + MSG_FIN + ERR + aux;
+								output.writeUTF(outputData);
+								output.flush();
+
+								break;
+							}
+							
 							user=credencial[0];
 							pass = credencial[1];
 							valor=credencial[2];
+							
+							//Comprobamos que el valor introducido por el usuario no es un signo '-' o un '.' solamente
+							if(valor.equals("-")||valor.equals(".")){
+								String aux="Valor no valido";
+								outputData =String.valueOf(VERSION) + secuencia + MSG_FIN + ERR + aux;
+								output.writeUTF(outputData);
+								output.flush();
+								output.flush();
+
+								break;
+							}
+					
 							auth = new Authentication(user);
 							
 							if(tipo==MSG_OPERACION){
