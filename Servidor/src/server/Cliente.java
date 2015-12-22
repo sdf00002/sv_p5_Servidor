@@ -46,15 +46,14 @@ public class Cliente {
 				outToServer.writeInt(secuencia);
 
 				outToServer.write(MSG_OPERACION);
-				outToServer.writeUTF("sin");
+				outToServer.writeUTF("cos");
 				outToServer.writeUTF(user + "_" + pass+"_"+num);
 				outToServer.flush();
 				
 				modifiedSentence=dis.readUTF();																			
 				
-				//System.out.println("Version: "+v+" secuencia: "+secuencia+" tipo: "+tipo+" cmd: "+cmd+" res: "+res);
+				
 				System.out.println(modifiedSentence);
-				System.out.println(modifiedSentence.length());
 				estado++;
 			}
 

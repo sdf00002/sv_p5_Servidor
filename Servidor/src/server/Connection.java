@@ -93,7 +93,24 @@ public class Connection implements Runnable {
 							}
 							
 							user=credencial[0];
+							if (auth.open(user)==false){
+								outputData =String.valueOf(VERSION) + secuencia + MSG_FIN + ERR + "usuario no existente";
+								output.writeUTF(outputData);
+								output.flush();
+								output.flush();
+
+								break;
+							}
+							auth = new Authentication(user);
 							pass = credencial[1];
+							if (auth.checkKey(pass) == false){
+								outputData =String.valueOf(VERSION) + secuencia + MSG_FIN + ERR + "password incorrecta";	
+								output.writeUTF(outputData);
+								output.flush();
+								output.flush();
+								break;
+								
+							}
 							valor=credencial[2];
 							
 							//Comprobamos que el valor introducido por el usuario no es un signo '-' o un '.' solamente
@@ -107,7 +124,7 @@ public class Connection implements Runnable {
 								break;
 							}
 					
-							auth = new Authentication(user);
+							
 							
 							if(tipo==MSG_OPERACION){
 							//Comprobamos que exista el usuario y que la contraseña sea correcta
