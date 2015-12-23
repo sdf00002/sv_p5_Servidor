@@ -45,8 +45,8 @@ public class Cliente {
 
 				outToServer.writeInt(secuencia);
 
-				outToServer.write(MSG_OPERACION);
-				outToServer.writeUTF("cos");
+				outToServer.write(MSG_LOGIN);
+				outToServer.writeUTF("+OK");
 				outToServer.writeUTF(user + "_" + pass+"_"+num);
 				outToServer.flush();
 				

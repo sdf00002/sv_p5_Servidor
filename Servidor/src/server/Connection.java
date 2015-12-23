@@ -79,9 +79,10 @@ public class Connection implements Runnable {
 
 
 
-							//Comprobamos el usuario y su contraseña
-							String[] credencial = payload.split("_");
+							//Separamos los campos del payload
+								String[] credencial = payload.split("_");
 							
+							//Comprobamos que la longitud del payload sea de tres
 							if(credencial.length!=3){
 								String aux="Valor no valido";
 								
@@ -92,59 +93,46 @@ public class Connection implements Runnable {
 								break;
 							}
 							
+							
 							user=credencial[0];
-							if (auth.open(user)==false){
-								outputData =String.valueOf(VERSION) + secuencia + MSG_FIN + ERR + "usuario no existente";
-								output.writeUTF(outputData);
-								output.flush();
-								output.flush();
-
-								break;
-							}
 							auth = new Authentication(user);
 							pass = credencial[1];
-							if (auth.checkKey(pass) == false){
-								outputData =String.valueOf(VERSION) + secuencia + MSG_FIN + ERR + "password incorrecta";	
-								output.writeUTF(outputData);
-								output.flush();
-								output.flush();
-								break;
-								
-							}
-							valor=credencial[2];
-							
-							//Comprobamos que el valor introducido por el usuario no es un signo '-' o un '.' solamente
-							if(valor.equals("-")||valor.equals(".")){
-								String aux="Valor no valido";
-								outputData =String.valueOf(VERSION) + secuencia + MSG_FIN + ERR + aux;
-								output.writeUTF(outputData);
-								output.flush();
-								output.flush();
-
-								break;
-							}
+							valor=credencial[2];														
 					
 							
 							
 							if(tipo==MSG_OPERACION){
 							//Comprobamos que exista el usuario y que la contraseña sea correcta
 							if (auth.open(user)==true && auth.checkKey(pass) == true) {	
-								//outputData =String.valueOf(VERSION) + secuencia + MSG_LOGIN + OK + "Realiza la operacion";
+								
+									//Comprobamos que el valor introducido por el usuario no es un signo '-' o un '.' solamente
+									if(valor.equals("-")||valor.equals(".")){
+										String aux="Valor no valido";
+										outputData =String.valueOf(VERSION) + secuencia + MSG_FIN + ERR + aux;
+										output.writeUTF(outputData);
+										output.flush();
+										output.flush();
+	
+										break;
+									}
+																
 								if(comando.equalsIgnoreCase("sin")){
 									double res=Math.sin(Double.parseDouble(valor)*Math.PI/180);
+									if(res<0.00001 && res>-0.00001)
+										res=0.0;
 									outputData =String.valueOf(VERSION) + secuencia + MSG_FIN + OK + comando + res;
 									
 								}
 								else if (comando.equalsIgnoreCase("cos")){
 									double res=Math.cos(Double.parseDouble(valor)*Math.PI/180);
+									if(res<0.00001 && res>-0.00001)
+										res=0.0;
 									outputData =String.valueOf(VERSION) + secuencia + MSG_FIN + OK + comando + res;
 									
 								}
 								
 									else{
 										outputData =String.valueOf(VERSION) + secuencia + MSG_FIN + ERR + "comando incorrecto";
-								
-									
 									}
 								
 							}
