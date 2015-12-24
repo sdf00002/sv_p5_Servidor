@@ -23,9 +23,9 @@ public class Authentication {
 	protected String mUser = "";
 
 	/**
-	 * Se inicializa el buzón con el nombre del usuario
+	 * Se inicializa con el nombre del usuario
 	 * 
-	 * @param user
+	 * @param user Nombre del usuario en cuestion
 	 */
 	public Authentication(String user) {
 		mUser = user;
@@ -35,8 +35,8 @@ public class Authentication {
 	/**
 	 * Comprueba si existe el directorio
 	 * 
-	 * @param user
-	 * @return
+	 * @param user Nombre del usuario en cuestion
+	 * @return TRUE si existe el usuario, FALSE en otro caso.
 	 */
 	protected boolean open(String user) {
 		File file = new File(user+".key");

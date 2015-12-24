@@ -24,9 +24,13 @@ public class Connection implements Runnable {
 
 
 
+	/**
+	 * @param s Se le pasa el socket
+	 */
 	public Connection(Socket s) {
 		mSocket = s;
 	}
+
 
 	@Override
 	public void run() {
@@ -40,7 +44,7 @@ public class Connection implements Runnable {
 			try {
 
 			DataOutputStream output = new DataOutputStream(mSocket.getOutputStream());
-			//BufferedReader input = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
+			
 			DataInputStream input = new DataInputStream(mSocket.getInputStream());
 			
 
@@ -49,7 +53,7 @@ public class Connection implements Runnable {
 				try{
 					version = input.readByte();
 					if(version!=1){
-						//outputData = ERR+" [" + version + "] VERSION NO VALIDA";
+						
 						String aux="Version no valida";
 						output.write(VERSION);
 						output.writeInt(1);
@@ -61,7 +65,7 @@ public class Connection implements Runnable {
 					}
 					} catch(NumberFormatException e){
 						//Acciones asociadas a una version invalida
-						//outputData = ERR+" [" + version + "] FORMATO DE VERSION NO VALIDO"+CRLF;
+						
 						String aux="Formato version no valido";
 						output.write(VERSION);
 						output.writeInt(1);
@@ -115,7 +119,7 @@ public class Connection implements Runnable {
 	
 										break;
 									}
-																
+								//Operción seno								
 								if(comando.equalsIgnoreCase("sin")){
 									double res=Math.sin(Double.parseDouble(valor)*Math.PI/180);
 									if(res<0.00001 && res>-0.00001)
@@ -123,6 +127,7 @@ public class Connection implements Runnable {
 									outputData =String.valueOf(VERSION) + secuencia + MSG_FIN + OK + comando + res;
 									
 								}
+								//Operación coseno
 								else if (comando.equalsIgnoreCase("cos")){
 									double res=Math.cos(Double.parseDouble(valor)*Math.PI/180);
 									if(res<0.00001 && res>-0.00001)
@@ -159,7 +164,7 @@ public class Connection implements Runnable {
 							estado++;
 
 			}
-			//output.write(outputData.getBytes());
+			
 			System.out.println(
 					"Servidor [Finalizado]> " + mSocket.getInetAddress().toString() + ":" + mSocket.getPort());
 
